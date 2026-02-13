@@ -4,7 +4,7 @@ import {
   TaxPaymentRequest,
   AmendSaleRequest,
   TaxPositionResponse,
-} from "../types/api-types";
+} from "../validators/schemas";
 
 export function mapSalesEventRequest(request: SalesEventRequest): SalesEvent {
   const { eventType, ...salesEvent } = request;
