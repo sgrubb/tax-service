@@ -6,19 +6,19 @@ import {
 } from "../validators/schemas";
 
 export function mapSalesEventRequest(request: SalesEventRequest): SalesEvent {
-  const { eventType, ...salesEvent } = request;
-  return salesEvent;
+  const { eventType, date, ...rest } = request;
+  return { ...rest, date: new Date(date) };
 }
 
 export function mapTaxPaymentRequest(request: TaxPaymentRequest): TaxPayment {
-  const { eventType, ...taxPayment } = request;
-  return taxPayment;
+  const { eventType, date, ...rest } = request;
+  return { ...rest, date: new Date(date) };
 }
 
 export function mapAmendSaleRequest(request: AmendSaleRequest): Amendment {
   const { date, invoiceId, itemId, cost, taxRate } = request;
   return {
-    date,
+    date: new Date(date),
     invoiceId,
     item: { itemId, cost, taxRate },
   };

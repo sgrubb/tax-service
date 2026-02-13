@@ -6,8 +6,9 @@ import { DateQuerySchema } from "../validators/schemas";
 
 export function taxPositionHandler(req: Request, res: Response, next: NextFunction, store: Store): void {
   try {
-    const { date: requestedDate } = DateQuerySchema.parse(req.query);
-    logger.info({ date: requestedDate }, "Querying tax position");
+    const { date: requestedDateString } = DateQuerySchema.parse(req.query);
+    const requestedDate = new Date(requestedDateString);
+    logger.info({ date: requestedDateString }, "Querying tax position");
 
     const amendments = store
       .getAmendments()
@@ -45,12 +46,12 @@ export function taxPositionHandler(req: Request, res: Response, next: NextFuncti
     const taxPosition = salesTax - totalPayments;
 
     if (taxPosition < 0) {
-      logger.warn({ date: requestedDate, taxPosition }, "Negative tax position");
+      logger.warn({ date: requestedDateString, taxPosition }, "Negative tax position");
     }
 
-    logger.info({ date: requestedDate, taxPosition }, "Tax position calculated");
+    logger.info({ date: requestedDateString, taxPosition }, "Tax position calculated");
 
-    const response: TaxPositionResponse = { date: requestedDate, taxPosition };
+    const response: TaxPositionResponse = { date: requestedDateString, taxPosition };
     res.status(200).json(response);
   } catch (err) {
     next(err);

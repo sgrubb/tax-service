@@ -6,17 +6,17 @@ export type Item = {
 
 export type SalesEvent = {
   invoiceId: string;
-  date: string;
+  date: Date;
   items: Item[];
 };
 
 export type Amendment = {
-  date: string;
+  date: Date;
   invoiceId: string;
   item: Item;
 };
 
 export type TaxPayment = {
-  date: string;
+  date: Date;
   amount: number;
 };

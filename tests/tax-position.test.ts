@@ -28,7 +28,7 @@ describe("GET /tax-position", () => {
     it("should return correct tax position with a single sales event", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
 
@@ -43,7 +43,7 @@ describe("GET /tax-position", () => {
     it("should sum tax across multiple items in a sales event", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [
           { itemId: "ITEM-1", cost: 1000, taxRate: 0.2 },
           { itemId: "ITEM-2", cost: 2000, taxRate: 0.1 },
@@ -62,12 +62,12 @@ describe("GET /tax-position", () => {
     it("should sum tax across multiple sales events", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addSalesEvent({
         invoiceId: "INV-002",
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         items: [{ itemId: "ITEM-2", cost: 3000, taxRate: 0.1 }],
       });
 
@@ -83,11 +83,11 @@ describe("GET /tax-position", () => {
     it("should subtract tax payments", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addTaxPayment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         amount: 50,
       });
 
@@ -103,11 +103,11 @@ describe("GET /tax-position", () => {
     it("should return negative tax position when payments exceed tax owed", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addTaxPayment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         amount: 500,
       });
 
@@ -123,12 +123,12 @@ describe("GET /tax-position", () => {
     it("should exclude sales events after the requested date", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addSalesEvent({
         invoiceId: "INV-002",
-        date: "2026-01-20T10:00:00Z",
+        date: new Date("2026-01-20T10:00:00Z"),
         items: [{ itemId: "ITEM-2", cost: 5000, taxRate: 0.2 }],
       });
 
@@ -144,15 +144,15 @@ describe("GET /tax-position", () => {
     it("should exclude tax payments after the requested date", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addTaxPayment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         amount: 50,
       });
       store.addTaxPayment({
-        date: "2026-01-20T10:00:00Z",
+        date: new Date("2026-01-20T10:00:00Z"),
         amount: 100,
       });
 
@@ -168,7 +168,7 @@ describe("GET /tax-position", () => {
     it("should include events on the exact requested date", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-15T10:00:00Z",
+        date: new Date("2026-01-15T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
 
@@ -192,12 +192,12 @@ describe("GET /tax-position", () => {
     it("should exclude events with the same date but a later time", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-15T08:00:00Z",
+        date: new Date("2026-01-15T08:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addSalesEvent({
         invoiceId: "INV-002",
-        date: "2026-01-15T14:00:00Z",
+        date: new Date("2026-01-15T14:00:00Z"),
         items: [{ itemId: "ITEM-2", cost: 2000, taxRate: 0.2 }],
       });
 
@@ -214,7 +214,7 @@ describe("GET /tax-position", () => {
     it("should handle zero tax rate", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0 }],
       });
 
@@ -231,11 +231,11 @@ describe("GET /tax-position", () => {
     it("should apply amendment before query date", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
       });
@@ -252,11 +252,11 @@ describe("GET /tax-position", () => {
     it("should not apply amendment after query date", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-20T10:00:00Z",
+        date: new Date("2026-01-20T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
       });
@@ -273,16 +273,16 @@ describe("GET /tax-position", () => {
     it("should use most recent amendment when multiple exist", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-11T10:00:00Z",
+        date: new Date("2026-01-11T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
       });
       store.addAmendment({
-        date: "2026-01-13T10:00:00Z",
+        date: new Date("2026-01-13T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 3000, taxRate: 0.1 },
       });
@@ -299,14 +299,14 @@ describe("GET /tax-position", () => {
     it("should use original values when no amendment exists", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [
           { itemId: "ITEM-1", cost: 1000, taxRate: 0.2 },
           { itemId: "ITEM-2", cost: 2000, taxRate: 0.1 },
         ],
       });
       store.addAmendment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 5000, taxRate: 0.2 },
       });
@@ -323,16 +323,16 @@ describe("GET /tax-position", () => {
     it("should only apply amendment to matching invoice", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addSalesEvent({
         invoiceId: "INV-002",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 5000, taxRate: 0.2 },
       });
@@ -349,11 +349,11 @@ describe("GET /tax-position", () => {
     it("should apply amendment that changes taxRate", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 1000, taxRate: 0.1 },
       });
@@ -370,11 +370,11 @@ describe("GET /tax-position", () => {
     it("should ignore amendment for non-existent item on a sale", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-999", cost: 9000, taxRate: 0.5 },
       });
@@ -391,16 +391,16 @@ describe("GET /tax-position", () => {
     it("should use only amendments up to query date when multiple exist", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-11T10:00:00Z",
+        date: new Date("2026-01-11T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
       });
       store.addAmendment({
-        date: "2026-01-20T10:00:00Z",
+        date: new Date("2026-01-20T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 9000, taxRate: 0.5 },
       });
@@ -417,16 +417,16 @@ describe("GET /tax-position", () => {
     it("should apply amendment with tax payments correctly", async () => {
       store.addSalesEvent({
         invoiceId: "INV-001",
-        date: "2026-01-10T10:00:00Z",
+        date: new Date("2026-01-10T10:00:00Z"),
         items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
       });
       store.addAmendment({
-        date: "2026-01-12T10:00:00Z",
+        date: new Date("2026-01-12T10:00:00Z"),
         invoiceId: "INV-001",
         item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
       });
       store.addTaxPayment({
-        date: "2026-01-13T10:00:00Z",
+        date: new Date("2026-01-13T10:00:00Z"),
         amount: 100,
       });
 
