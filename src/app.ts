@@ -1,7 +1,7 @@
 import express from "express";
 import { createStore } from "./store/store";
 import { createTransactionsRouter } from "./routes/transactions-router";
-import taxRouter from "./routes/tax-router";
+import { createTaxRouter } from "./routes/tax-router";
 
 const app = express();
 const store = createStore();
@@ -21,6 +21,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/", createTransactionsRouter(store));
-app.use("/", taxRouter);
+app.use("/", createTaxRouter(store));
 
 export default app;

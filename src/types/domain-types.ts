@@ -20,8 +20,3 @@ export type TaxPayment = {
   date: string;
   amount: number;
 };
-
-export type TaxPosition = {
-  date: string;
-  taxPosition: number;
-};

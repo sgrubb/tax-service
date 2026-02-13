@@ -9,13 +9,13 @@ export const ItemSchema = z.object({
 export const SalesEventRequestSchema = z.object({
   eventType: z.literal("SALES"),
   invoiceId: z.string(),
-  date: z.string().datetime(),
+  date: z.iso.datetime(),
   items: z.array(ItemSchema).min(1),
 });
 
 export const TaxPaymentRequestSchema = z.object({
   eventType: z.literal("TAX_PAYMENT"),
-  date: z.string().datetime(),
+  date: z.iso.datetime(),
   amount: z.number().int().nonnegative(),
 });
 
@@ -26,17 +26,15 @@ export const TransactionRequestSchema = z.discriminatedUnion("eventType", [
 
 export const AmendSaleRequestSchema = z
   .object({
-    date: z.string().datetime(),
+    date: z.iso.datetime(),
     invoiceId: z.string(),
   })
   .extend(ItemSchema.shape);
 
-export const TaxPositionResponseSchema = z.object({
-  date: z.string().datetime(),
-  taxPosition: z.number(),
+export const DateQuerySchema = z.object({
+  date: z.iso.datetime(),
 });
 
 export type SalesEventRequest = z.infer<typeof SalesEventRequestSchema>;
 export type TaxPaymentRequest = z.infer<typeof TaxPaymentRequestSchema>;
 export type AmendSaleRequest = z.infer<typeof AmendSaleRequestSchema>;
-export type TaxPositionResponse = z.infer<typeof TaxPositionResponseSchema>;

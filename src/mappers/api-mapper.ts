@@ -1,9 +1,8 @@
-import { SalesEvent, TaxPayment, Amendment, TaxPosition } from "../types/domain-types";
+import { SalesEvent, TaxPayment, Amendment } from "../types/domain-types";
 import {
   SalesEventRequest,
   TaxPaymentRequest,
   AmendSaleRequest,
-  TaxPositionResponse,
 } from "../validators/schemas";
 
 export function mapSalesEventRequest(request: SalesEventRequest): SalesEvent {
@@ -23,8 +22,4 @@ export function mapAmendSaleRequest(request: AmendSaleRequest): Amendment {
     invoiceId,
     item: { itemId, cost, taxRate },
   };
-}
-
-export function mapTaxPositionResponse(taxPosition: TaxPosition): TaxPositionResponse {
-  return taxPosition;
 }

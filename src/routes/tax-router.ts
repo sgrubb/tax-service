@@ -1,5 +1,11 @@
 import { Router } from "express";
+import { Store } from "../store/store";
+import { taxPositionHandler } from "../handlers/tax-position-handler";
 
-const taxRouter = Router();
+export function createTaxRouter(store: Store): Router {
+  const router = Router();
 
-export default taxRouter;
+  router.get("/tax-position", (req, res) => taxPositionHandler(req, res, store));
+
+  return router;
+}

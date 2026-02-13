@@ -22,7 +22,7 @@ describe("POST /transactions", () => {
   describe("SALES events", () => {
     const validSalesEvent = {
       eventType: "SALES",
-      date: "2024-01-15T10:00:00Z",
+      date: "2026-01-15T10:00:00Z",
       invoiceId: "INV-001",
       items: [
         { itemId: "ITEM-1", cost: 1000, taxRate: 0.2 },
@@ -147,7 +147,7 @@ describe("POST /transactions", () => {
   describe("TAX_PAYMENT events", () => {
     const validTaxPayment = {
       eventType: "TAX_PAYMENT",
-      date: "2024-01-15T10:00:00Z",
+      date: "2026-01-15T10:00:00Z",
       amount: 5000,
     };
 
@@ -196,7 +196,7 @@ describe("POST /transactions", () => {
     it("should return 400 for invalid date format", async () => {
       await request(app)
         .post("/transactions")
-        .send({ ...validTaxPayment, date: "2024-13-99" })
+        .send({ ...validTaxPayment, date: "2026-13-99" })
         .expect(400);
     });
 
@@ -213,14 +213,14 @@ describe("POST /transactions", () => {
     it("should return 400 for missing eventType", async () => {
       await request(app)
         .post("/transactions")
-        .send({ date: "2024-01-15T10:00:00Z" })
+        .send({ date: "2026-01-15T10:00:00Z" })
         .expect(400);
     });
 
     it("should return 400 for invalid eventType", async () => {
       await request(app)
         .post("/transactions")
-        .send({ eventType: "INVALID", date: "2024-01-15T10:00:00Z" })
+        .send({ eventType: "INVALID", date: "2026-01-15T10:00:00Z" })
         .expect(400);
     });
 
@@ -249,7 +249,7 @@ describe("POST /transactions", () => {
         .post("/transactions")
         .send({
           eventType: "SALES",
-          date: "2024-01-15T10:00:00Z",
+          date: "2026-01-15T10:00:00Z",
           invoiceId: "INV-001",
           items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
         })
