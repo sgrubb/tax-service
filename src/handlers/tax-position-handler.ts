@@ -9,14 +9,31 @@ export function taxPositionHandler(req: Request, res: Response, next: NextFuncti
     const { date: requestedDate } = DateQuerySchema.parse(req.query);
     logger.info({ date: requestedDate }, "Querying tax position");
 
+    const amendments = store
+      .getAmendments()
+      .filter((amendment) => amendment.date <= requestedDate);
+
     const salesTax = store
       .getSalesEvents()
       .filter((event) => event.date <= requestedDate)
       .reduce((sum, event) => {
-        const eventTax = event.items.reduce(
-          (itemSum, item) => itemSum + item.cost * item.taxRate,
-          0,
-        );
+        const eventTax = event.items.reduce((itemSum, item) => {
+          const applicableAmendments = amendments.filter(
+            (amendment) =>
+              amendment.invoiceId === event.invoiceId &&
+              amendment.item.itemId === item.itemId
+          );
+
+          const { cost, taxRate } = applicableAmendments.length > 0
+            ? applicableAmendments
+                .reduce((latest, current) =>
+                  current.date > latest.date ? current : latest
+                )
+                .item
+            : item;
+
+          return itemSum + cost * taxRate;
+        }, 0);
         return sum + eventTax;
       }, 0);
 

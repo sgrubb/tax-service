@@ -227,6 +227,219 @@ describe("GET /tax-position", () => {
     });
   });
 
+  describe("amendments", () => {
+    it("should apply amendment before query date", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-12T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // Amended: 2000 * 0.2 = 400
+      expect(res.body.taxPosition).toBe(400);
+    });
+
+    it("should not apply amendment after query date", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-20T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // Original: 1000 * 0.2 = 200
+      expect(res.body.taxPosition).toBe(200);
+    });
+
+    it("should use most recent amendment when multiple exist", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-11T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
+      });
+      store.addAmendment({
+        date: "2026-01-13T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 3000, taxRate: 0.1 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // Latest amendment: 3000 * 0.1 = 300
+      expect(res.body.taxPosition).toBe(300);
+    });
+
+    it("should use original values when no amendment exists", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [
+          { itemId: "ITEM-1", cost: 1000, taxRate: 0.2 },
+          { itemId: "ITEM-2", cost: 2000, taxRate: 0.1 },
+        ],
+      });
+      store.addAmendment({
+        date: "2026-01-12T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 5000, taxRate: 0.2 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // ITEM-1 amended: 5000 * 0.2 = 1000, ITEM-2 original: 2000 * 0.1 = 200
+      expect(res.body.taxPosition).toBe(1200);
+    });
+
+    it("should only apply amendment to matching invoice", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addSalesEvent({
+        invoiceId: "INV-002",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-12T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 5000, taxRate: 0.2 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // INV-001 amended: 5000 * 0.2 = 1000, INV-002 original: 1000 * 0.2 = 200
+      expect(res.body.taxPosition).toBe(1200);
+    });
+
+    it("should apply amendment that changes taxRate", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-12T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 1000, taxRate: 0.1 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // Amended taxRate: 1000 * 0.1 = 100
+      expect(res.body.taxPosition).toBe(100);
+    });
+
+    it("should ignore amendment for non-existent item on a sale", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-12T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-999", cost: 9000, taxRate: 0.5 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // No matching item, original: 1000 * 0.2 = 200
+      expect(res.body.taxPosition).toBe(200);
+    });
+
+    it("should use only amendments up to query date when multiple exist", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-11T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
+      });
+      store.addAmendment({
+        date: "2026-01-20T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 9000, taxRate: 0.5 },
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // Only first amendment applies: 2000 * 0.2 = 400
+      expect(res.body.taxPosition).toBe(400);
+    });
+
+    it("should apply amendment with tax payments correctly", async () => {
+      store.addSalesEvent({
+        invoiceId: "INV-001",
+        date: "2026-01-10T10:00:00Z",
+        items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],
+      });
+      store.addAmendment({
+        date: "2026-01-12T10:00:00Z",
+        invoiceId: "INV-001",
+        item: { itemId: "ITEM-1", cost: 2000, taxRate: 0.2 },
+      });
+      store.addTaxPayment({
+        date: "2026-01-13T10:00:00Z",
+        amount: 100,
+      });
+
+      const res = await request(app)
+        .get("/tax-position")
+        .query({ date: "2026-01-15T10:00:00Z" })
+        .expect(200);
+
+      // Amended: 2000 * 0.2 = 400, minus payment 100 = 300
+      expect(res.body.taxPosition).toBe(300);
+    });
+  });
+
   describe("invalid requests", () => {
     it("should return 400 when date parameter is missing", async () => {
       const res = await request(app)
