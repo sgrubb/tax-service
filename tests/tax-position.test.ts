@@ -1,14 +1,7 @@
 import express from "express";
 import request from "supertest";
+import { createApp } from "../src/app";
 import { createStore, Store } from "../src/store/store";
-import { createTaxRouter } from "../src/routes/tax-router";
-
-function createApp(store: Store) {
-  const app = express();
-  app.use(express.json());
-  app.use("/", createTaxRouter(store));
-  return app;
-}
 
 describe("GET /tax-position", () => {
   let store: Store;
@@ -236,33 +229,46 @@ describe("GET /tax-position", () => {
 
   describe("invalid requests", () => {
     it("should return 400 when date parameter is missing", async () => {
-      await request(app)
+      const res = await request(app)
         .get("/tax-position")
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for invalid date format", async () => {
-      await request(app)
+      const res = await request(app)
         .get("/tax-position")
         .query({ date: "not-a-date" })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for non-ISO date format", async () => {
-      await request(app)
+      const res = await request(app)
         .get("/tax-position")
-        .query({ date: "01/15/2024" })
+        .query({ date: "01/15/2026" })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
-    it("should return 400 with error details", async () => {
+    it("should return 400 with validation error details", async () => {
       const res = await request(app)
         .get("/tax-position")
         .query({ date: "bad" })
         .expect(400);
 
-      expect(res.body).toHaveProperty("errors");
-      expect(Array.isArray(res.body.errors)).toBe(true);
+      expect(res.body).toEqual({
+        error: "Validation failed",
+        details: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
     });
   });
 });

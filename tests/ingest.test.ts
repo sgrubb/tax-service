@@ -1,14 +1,7 @@
 import express from "express";
 import request from "supertest";
+import { createApp } from "../src/app";
 import { createStore, Store } from "../src/store/store";
-import { createTransactionsRouter } from "../src/routes/transactions-router";
-
-function createApp(store: Store) {
-  const app = express();
-  app.use(express.json());
-  app.use("/", createTransactionsRouter(store));
-  return app;
-}
 
 describe("POST /transactions", () => {
   let store: Store;
@@ -74,73 +67,94 @@ describe("POST /transactions", () => {
     });
 
     it("should return 400 for empty items array", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ ...validSalesEvent, items: [] })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
+      expect(res.body.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "items" }),
+        ]),
+      );
     });
 
     it("should return 400 for float cost", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({
           ...validSalesEvent,
           items: [{ itemId: "ITEM-1", cost: 10.5, taxRate: 0.2 }],
         })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for negative cost", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({
           ...validSalesEvent,
           items: [{ itemId: "ITEM-1", cost: -100, taxRate: 0.2 }],
         })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for taxRate greater than 1", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({
           ...validSalesEvent,
           items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 1.5 }],
         })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for negative taxRate", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({
           ...validSalesEvent,
           items: [{ itemId: "ITEM-1", cost: 1000, taxRate: -0.1 }],
         })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for invalid date format", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ ...validSalesEvent, date: "not-a-date" })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for missing invoiceId", async () => {
       const { invoiceId, ...noInvoice } = validSalesEvent;
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send(noInvoice)
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for missing items", async () => {
       const { items, ...noItems } = validSalesEvent;
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send(noItems)
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
   });
 
@@ -180,66 +194,86 @@ describe("POST /transactions", () => {
     });
 
     it("should return 400 for float amount", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ ...validTaxPayment, amount: 50.5 })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for negative amount", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ ...validTaxPayment, amount: -100 })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for invalid date format", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ ...validTaxPayment, date: "2026-13-99" })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for missing amount", async () => {
       const { amount, ...noAmount } = validTaxPayment;
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send(noAmount)
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
   });
 
   describe("invalid requests", () => {
     it("should return 400 for missing eventType", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ date: "2026-01-15T10:00:00Z" })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for invalid eventType", async () => {
-      await request(app)
+      const res = await request(app)
         .post("/transactions")
         .send({ eventType: "INVALID", date: "2026-01-15T10:00:00Z" })
         .expect(400);
+
+      expect(res.body.error).toBe("Validation failed");
     });
 
     it("should return 400 for empty body", async () => {
-      await request(app)
-        .post("/transactions")
-        .send({})
-        .expect(400);
-    });
-
-    it("should return 400 with error details", async () => {
       const res = await request(app)
         .post("/transactions")
         .send({})
         .expect(400);
 
-      expect(res.body).toHaveProperty("errors");
-      expect(Array.isArray(res.body.errors)).toBe(true);
-      expect(res.body.errors.length).toBeGreaterThan(0);
+      expect(res.body.error).toBe("Validation failed");
+    });
+
+    it("should return 400 with validation error details", async () => {
+      const res = await request(app)
+        .post("/transactions")
+        .send({})
+        .expect(400);
+
+      expect(res.body).toEqual({
+        error: "Validation failed",
+        details: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
     });
   });
 

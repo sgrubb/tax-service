@@ -5,7 +5,7 @@ import { ingestHandler } from "../handlers/ingest-handler";
 export function createTransactionsRouter(store: Store): Router {
   const router = Router();
 
-  router.post("/transactions", (req, res) => ingestHandler(req, res, store));
+  router.post("/transactions", (req, res, next) => ingestHandler(req, res, next, store));
 
   return router;
 }

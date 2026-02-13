@@ -5,7 +5,7 @@ import { taxPositionHandler } from "../handlers/tax-position-handler";
 export function createTaxRouter(store: Store): Router {
   const router = Router();
 
-  router.get("/tax-position", (req, res) => taxPositionHandler(req, res, store));
+  router.get("/tax-position", (req, res, next) => taxPositionHandler(req, res, next, store));
 
   return router;
 }
