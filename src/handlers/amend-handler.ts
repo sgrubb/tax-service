@@ -11,6 +11,7 @@ export function amendHandler(req: Request, res: Response, next: NextFunction, st
     logger.info({ invoiceId: data.invoiceId, itemId: data.itemId, date: data.date }, "Amending sale");
     const amendment = mapAmendSaleRequest(data);
     store.addAmendment(amendment);
+    logger.info({ invoiceId: data.invoiceId, itemId: data.itemId, date: data.date }, "Amended sale");
 
     res.status(202).send();
   } catch (err) {

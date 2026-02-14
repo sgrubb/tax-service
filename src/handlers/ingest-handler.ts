@@ -9,13 +9,15 @@ export function ingestHandler(req: Request, res: Response, next: NextFunction, s
     const data = TransactionRequestSchema.parse(req.body);
 
     if (data.eventType === "SALES") {
-      logger.info({ eventType: data.eventType, date: data.date }, "Ingesting sales event");
+      logger.info({ invoiceId: data.invoiceId, date: data.date }, "Ingesting sales event");
       const salesEvent = mapSalesEventRequest(data);
       store.addSalesEvent(salesEvent);
+      logger.info({ invoiceId: data.invoiceId, date: data.date }, "Ingested sales event");
     } else {
-      logger.info({ eventType: data.eventType, date: data.date }, "Ingesting tax payment");
+      logger.info({ date: data.date }, "Ingesting tax payment");
       const taxPayment = mapTaxPaymentRequest(data);
       store.addTaxPayment(taxPayment);
+      logger.info({ date: data.date }, "Ingested tax payment");
     }
 
     res.status(202).send();

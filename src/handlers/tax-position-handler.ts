@@ -48,7 +48,6 @@ export function taxPositionHandler(req: Request, res: Response, next: NextFuncti
     if (taxPosition < 0) {
       logger.warn({ date: requestedDateString, taxPosition }, "Negative tax position");
     }
-
     logger.info({ date: requestedDateString, taxPosition }, "Tax position calculated");
 
     const response: TaxPositionResponse = { date: requestedDateString, taxPosition };
