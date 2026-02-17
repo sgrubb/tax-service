@@ -16,8 +16,9 @@ export function mapTaxPaymentRequest(request: TaxPaymentRequest): TaxPayment {
 }
 
 export function mapAmendSaleRequest(request: AmendSaleRequest): Amendment {
-  const { date, invoiceId, itemId, cost, taxRate } = request;
+  const { companyId, date, invoiceId, itemId, cost, taxRate } = request;
   return {
+    companyId,
     date: new Date(date),
     invoiceId,
     item: { itemId, cost, taxRate },

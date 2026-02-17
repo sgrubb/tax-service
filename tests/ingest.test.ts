@@ -15,6 +15,7 @@ describe("POST /transactions", () => {
   describe("SALES events", () => {
     const validSalesEvent = {
       eventType: "SALES",
+      companyId: "COMPANY-1",
       date: "2026-01-15T10:00:00Z",
       invoiceId: "INV-001",
       items: [
@@ -161,6 +162,7 @@ describe("POST /transactions", () => {
   describe("TAX_PAYMENT events", () => {
     const validTaxPayment = {
       eventType: "TAX_PAYMENT",
+      companyId: "COMPANY-1",
       date: "2026-01-15T10:00:00Z",
       amount: 5000,
     };
@@ -283,6 +285,7 @@ describe("POST /transactions", () => {
         .post("/transactions")
         .send({
           eventType: "SALES",
+          companyId: "COMPANY-1",
           date: "2026-01-15T10:00:00Z",
           invoiceId: "INV-001",
           items: [{ itemId: "ITEM-1", cost: 1000, taxRate: 0.2 }],

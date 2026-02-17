@@ -8,6 +8,7 @@ export const ItemSchema = z.object({
 
 export const SalesEventRequestSchema = z.object({
   eventType: z.literal("SALES"),
+  companyId: z.string().min(1),
   invoiceId: z.string(),
   date: z.iso.datetime(),
   items: z.array(ItemSchema).min(1),
@@ -15,6 +16,7 @@ export const SalesEventRequestSchema = z.object({
 
 export const TaxPaymentRequestSchema = z.object({
   eventType: z.literal("TAX_PAYMENT"),
+  companyId: z.string().min(1),
   date: z.iso.datetime(),
   amount: z.number().int().nonnegative(),
 });
@@ -26,12 +28,14 @@ export const TransactionRequestSchema = z.discriminatedUnion("eventType", [
 
 export const AmendSaleRequestSchema = z
   .object({
+    companyId: z.string().min(1),
     date: z.iso.datetime(),
     invoiceId: z.string(),
   })
   .extend(ItemSchema.shape);
 
 export const DateQuerySchema = z.object({
+  companyId: z.string().min(1),
   date: z.iso.datetime(),
 });
 

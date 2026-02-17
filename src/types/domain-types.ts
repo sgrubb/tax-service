@@ -5,18 +5,21 @@ export type Item = {
 };
 
 export type SalesEvent = {
+  companyId: string;
   invoiceId: string;
   date: Date;
   items: Item[];
 };
 
 export type Amendment = {
+  companyId: string;
   date: Date;
   invoiceId: string;
   item: Item;
 };
 
 export type TaxPayment = {
+  companyId: string;
   date: Date;
   amount: number;
 };

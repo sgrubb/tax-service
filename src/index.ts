@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createApp } from "./app";
 import { createStore } from "./store/store";
 import { logger } from "./logger";

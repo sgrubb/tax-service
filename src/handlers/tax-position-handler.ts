@@ -6,17 +6,17 @@ import { DateQuerySchema } from "../validators/schemas";
 
 export function taxPositionHandler(req: Request, res: Response, next: NextFunction, store: Store): void {
   try {
-    const { date: requestedDateString } = DateQuerySchema.parse(req.query);
+    const { companyId, date: requestedDateString } = DateQuerySchema.parse(req.query);
     const requestedDate = new Date(requestedDateString);
-    logger.info({ date: requestedDateString }, "Querying tax position");
+    logger.info({ companyId, date: requestedDateString }, "Querying tax position");
 
     const amendments = store
       .getAmendments()
-      .filter((amendment) => amendment.date <= requestedDate);
+      .filter((amendment) => amendment.companyId === companyId && amendment.date <= requestedDate);
 
     const salesTax = store
       .getSalesEvents()
-      .filter((event) => event.date <= requestedDate)
+      .filter((event) => event.companyId === companyId && event.date <= requestedDate)
       .reduce((sum, event) => {
         const eventTax = event.items.reduce((itemSum, item) => {
           const applicableAmendments = amendments.filter(
@@ -40,13 +40,13 @@ export function taxPositionHandler(req: Request, res: Response, next: NextFuncti
 
     const totalPayments = store
       .getTaxPayments()
-      .filter((payment) => payment.date <= requestedDate)
+      .filter((payment) => payment.companyId === companyId && payment.date <= requestedDate)
       .reduce((sum, payment) => sum + payment.amount, 0);
 
     const taxPosition = salesTax - totalPayments;
 
     if (taxPosition < 0) {
-      logger.warn({ date: requestedDateString, taxPosition }, "Negative tax position");
+      logger.info({ date: requestedDateString, taxPosition }, "Negative tax position");
     }
     logger.info({ date: requestedDateString, taxPosition }, "Tax position calculated");
 

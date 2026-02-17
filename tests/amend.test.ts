@@ -13,6 +13,7 @@ describe("PATCH /sale", () => {
   });
 
   const validAmendment = {
+    companyId: "COMPANY-1",
     date: "2026-02-01T10:00:00Z",
     invoiceId: "INV-001",
     itemId: "ITEM-1",
